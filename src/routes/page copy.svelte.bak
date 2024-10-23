@@ -1,0 +1,107 @@
+<script lang="ts">
+  import { onMount } from "svelte";
+  import type { Task } from "../lib/types";
+  import { invoke } from "@tauri-apps/api/core";
+
+  let tasks: Task[] = [];
+  let description: string = "";
+  let id: number;
+  let completed: boolean = false;
+  let new_description: string;
+  let oneTask: Task;
+
+  const fetchTasks = async () => {
+    try {
+      tasks = await invoke("get_tasks");
+      console.log("Tasks fetched", tasks);
+    } catch (error) {
+      console.error("Error fetching tasks", error);
+    }
+  };
+
+  const addTask = async () => {
+    try {
+      await invoke("add_task", { description });
+      description = "";
+      fetchTasks();
+    } catch (error) {
+      console.error("Error adding task", error);
+    }
+  };
+
+  const updateTask = async () => {
+    console.log("Updating tasks", { id, new_description, completed });
+
+    try {
+      console.log("Updating tasks...step 2");
+
+      await invoke("update_task", {
+        task_id: id,
+        new_description,
+        completed,
+      });
+
+      console.log("Updating tasks...step 3");
+
+      fetchTasks();
+
+      console.log("Updating tasks...step 4");
+    } catch (error) {
+      console.error("Error updating task", error);
+    }
+    console.log("Updating tasks...done");
+  };
+
+  const getTaskById = async () => {
+    oneTask = await invoke("get_task_by_id", { task_id: id });
+    tasks = [];
+  };
+
+  const deleteTask = async (id: number) => {
+    try {
+      await invoke("delete_task", { task_id: id });
+      fetchTasks();
+    } catch (error) {
+      console.error("Error deleting task", error);
+    }
+  };
+
+  onMount(fetchTasks);
+</script>
+
+<main>
+  <h1>Task List</h1>
+  <form on:submit|preventDefault={addTask}>
+    <input bind:value={description} placeholder="New task" />
+    <button type="submit">Add task</button>
+  </form>
+
+  <form on:submit|preventDefault={updateTask}>
+    <input bind:value={id} type="number" placeholder="Task ID" />
+    <input bind:value={new_description} placeholder="New task description" />
+    <input bind:checked={completed} type="checkbox" />
+    <button type="submit">Update</button>
+  </form>
+
+  <section>
+    <h2>All tasks</h2>
+    {#each tasks as task}
+      <p>
+        {task.description}
+        <button on:click={() => deleteTask(task.id)}>Delete</button>
+      </p>
+    {/each}
+  </section>
+
+  <section>
+    <h2>Single task</h2>
+    <form on:submit|preventDefault={getTaskById}>
+      <input bind:value={id} type="number" placeholder="Task ID" />
+      <button type="submit">Find task</button>
+    </form>
+
+    <p>
+      {oneTask.description}
+    </p>
+  </section>
+</main>
