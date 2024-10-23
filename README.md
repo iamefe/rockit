@@ -4,7 +4,7 @@
 
 Ativie Oserefemhen
 
-## Tauri + SvelteKit + Tailwind CSS + TypeScript
+## Tauri + SvelteKit + Tailwind CSS + TypeScript + Sqlite
 
 This template should help get you started developing with Tauri, SvelteKit and TypeScript in Vite.
 
@@ -84,3 +84,7 @@ yarn dev
 ### .taurignore
 
 Create one to prevent reload loops due to database changes.
+
+```javascript
+tasks.db
+```
