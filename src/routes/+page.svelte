@@ -6,17 +6,23 @@
   import { error } from "@sveltejs/kit";
 
   let tasks: Task[] = [];
-  let oneTask: Task | null = null;
-  let taskId: number;
+  // let oneTask: Task | null = null;
+  // let taskId: number;
   let description: string = "";
   let id: number;
   let completed: boolean = false;
   let new_description: string;
   let updating: boolean = false;
 
+  const sortTasksById = () => {
+    tasks.sort((a, b) => b.id - a.id);
+  };
+
   const fetchTasks = async () => {
     try {
       tasks = await invoke("fetch_tasks");
+      tasks.map((task) => (task.deleting = false));
+      sortTasksById();
       console.log("Tasks fetched", tasks);
     } catch (error) {
       console.error("Error fetching tasks", error);
@@ -58,30 +64,30 @@
     fetchTasks();
   };
 
-  const getTaskById = async () => {
-    console.log("Fetching task by id:", typeof taskId);
-    const parsedId = parseInt(String(taskId));
-    console.log("ParsedId type:", typeof parsedId);
-    if (isNaN(parsedId) || parsedId <= 0) {
-      console.error("Invalid task ID");
-      return;
-    }
+  // const getTaskById = async () => {
+  //   console.log("Fetching task by id:", typeof taskId);
+  //   const parsedId = parseInt(String(taskId));
+  //   console.log("ParsedId type:", typeof parsedId);
+  //   if (isNaN(parsedId) || parsedId <= 0) {
+  //     console.error("Invalid task ID");
+  //     return;
+  //   }
 
-    try {
-      console.log("Trying to invoke");
-      oneTask = await invoke<Task | null>("fetch_task_by_id", {
-        task_id: parsedId,
-      });
-      console.log("OneTask's returned value: ", oneTask);
-      if (!oneTask) {
-        console.log("No task found with ID:", parsedId);
-      } else {
-        console.log("Fetched task by id:", oneTask?.description);
-      }
-    } catch (error) {
-      console.error("Error fetching task by id:", error);
-    }
-  };
+  //   try {
+  //     console.log("Trying to invoke");
+  //     oneTask = await invoke<Task | null>("fetch_task_by_id", {
+  //       task_id: parsedId,
+  //     });
+  //     console.log("OneTask's returned value: ", oneTask);
+  //     if (!oneTask) {
+  //       console.log("No task found with ID:", parsedId);
+  //     } else {
+  //       console.log("Fetched task by id:", oneTask?.description);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching task by id:", error);
+  //   }
+  // };
 
   const deleteTask = async (id: number) => {
     try {
@@ -90,6 +96,22 @@
     } catch (error) {
       console.error("Error deleting task", error);
     }
+    // deleting = false;
+  };
+
+  const toggleDeleting = (task_param: Task) => {
+    // For future reference: This works (long form)
+    // tasks = tasks.map((task) => {
+    //   if (task_param.id === task.id) {
+    //     task = { ...task, deleting: !task.deleting };
+    //   }
+    //   return task;
+    // });
+
+    // This works (short form)
+    tasks = tasks.map((task) =>
+      task_param.id === task.id ? { ...task, deleting: !task.deleting } : task
+    );
   };
 
   const toggleComplete = async () => {
@@ -232,17 +254,17 @@
       {/if}
     </section> -->
 
-    <section class="border-2 rounded-2xl py-4">
+    <section class="border-2 rounded-2xl py-4 mb-16">
       <div class="pl-5 border-b-2 mb-4">
         <h3 class="font-medium text-xl mb-4">Tasks 💪️</h3>
       </div>
-      <div class="pl-5">
+      <div class="px-5">
         {#if tasks.length > 0}
-          {#each tasks as task}
-            <div class="flex group flex-row items-center gap-3 mb-3">
+          {#each tasks as task, index (index)}
+            <div class="flex group flex-row items-center gap-3 mb-2">
               <a
-                href={`#`}
-                on:click={() => {
+                href={""}
+                on:click|preventDefault={() => {
                   id = task.id;
                   completed = task.completed;
                   toggleComplete();
@@ -262,27 +284,49 @@
                   </span>
                 {/if}
                 &nbsp;
-                <span
-                  class={`text-black group-hover:text-gray-800 group-hover:font-medium transition-all ease-in-out group-hover:tracking-tight ${task.completed ? `line-through text-gray-400` : ""}`}
-                  >{`${task.description}`}</span
+                <div
+                  class={`text-black group-hover:text-gray-800 inline-flex max-w-[410px] truncate group-hover:font-medium transition-all ease-in-out group-hover:tracking-tight ${task.completed ? `line-through text-gray-400` : ""}`}
                 >
+                  {task.description}
+                </div>
               </a>
-              <div class="inline-flex opacity-0 group-hover:opacity-100 gap-2">
-                <button
-                  on:click={() => {
-                    new_description = task.description;
-                    id = task.id;
-                    updating = true;
-                  }}
-                  class="border-2 text-gray-500 hover:text-white hover:hover:bg-gray-800 hover:border-gray-800 px-3 py-[2px] rounded-full font-medium transition-all"
-                  >Edit</button
+
+              {#if !task.deleting}
+                <div
+                  class="inline-flex opacity-0 group-hover:opacity-100 gap-2"
                 >
-                <button
-                  on:click={() => deleteTask(task.id)}
-                  class="border-2 text-gray-500 hover:text-white hover:hover:bg-gray-800 hover:border-gray-800 px-3 py-[2px] rounded-full font-medium transition-all"
-                  >Delete</button
-                >
-              </div>
+                  <button
+                    on:click={() => {
+                      new_description = task.description;
+                      id = task.id;
+                      updating = true;
+                    }}
+                    class="border-2 text-gray-500 hover:text-white hover:hover:bg-gray-800 hover:border-gray-800 px-3 py-[2px] rounded-full font-medium transition-all"
+                    >Edit</button
+                  >
+                  <button
+                    on:click={() => toggleDeleting(task)}
+                    class="border-2 text-gray-500 hover:text-white hover:hover:bg-gray-800 hover:border-gray-800 px-3 py-[2px] rounded-full font-medium transition-all"
+                    >Delete</button
+                  >
+                </div>
+              {:else}
+                <div class="inline-flex gap-2 items-center">
+                  <!-- <p class="inline">Delete task?</p> -->
+
+                  <button
+                    on:click={() => deleteTask(task.id)}
+                    class="border-2 text-gray-500 hover:text-white hover:hover:bg-gray-800 hover:border-gray-800 px-3 py-[2px] rounded-full font-medium transition-all"
+                    >Delete</button
+                  >
+
+                  <button
+                    on:click={() => toggleDeleting(task)}
+                    class="border-2 text-gray-500 hover:text-white hover:hover:bg-gray-800 hover:border-gray-800 px-3 py-[2px] rounded-full font-medium transition-all"
+                    >Cancel</button
+                  >
+                </div>
+              {/if}
             </div>
           {/each}
         {:else}
