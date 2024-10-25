@@ -13,9 +13,9 @@
   "app": {
     "windows": [
       {
-        "title": "rockit",
-        "width": 800,
-        "height": 600
+        "title": "Rockit",
+        "width": 1000,
+        "height": 900
       }
     ],
     "security": {

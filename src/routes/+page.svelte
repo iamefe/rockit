@@ -31,6 +31,7 @@
       }
       await invoke("create_task", { description });
       description = "";
+      updating = false;
       fetchTasks();
     } catch (error) {
       console.error("Error adding task", error);
@@ -112,20 +113,42 @@
 </script>
 
 <main class="flex flex-col items-center">
-  <div class="pt-28 w-[700px]">
-    <header class="flex flex-row mb-16 gap-3 justify-between items-end">
-      <h1 class="font-bold text-5xl">🚀️ RockIt</h1>
+  <div class="pt-20 w-[700px] flex flex-col gap-10">
+    <header class="flex flex-row gap-3 justify-between items-end mb-4">
+      <h1 class="font-bold text-5xl">🚀️ Rockit</h1>
       <p class="text-gray-500">Developed by Oserefemhen Ativie</p>
     </header>
 
-    <div class="gap-10 flex flex-col mb-10">
+    <!-- <section class="border-2 rounded-2xl py-4">
+      <div class="pl-4 border-b-2 mb-4">
+        <h3 class="font-medium text-xl mb-4">Quote</h3>
+      </div>
+      <div class="flex flex-row gap-2 pl-4">
+        <p>
+          “Success is the sum of small efforts, repeated day in and day out.”
+        </p>
+        <p class="text-gray-500">Robert Collier</p>
+      </div>
+    </section> -->
+
+    <section class="border-2 rounded-2xl py-4">
+      <div class="flex flex-row gap-2 pl-5">
+        <p>“Discipline is the bridge between goals and accomplishment.”</p>
+        <p class="text-gray-500">- Jim Rohn</p>
+      </div>
+    </section>
+
+    <section class="gap-10 flex flex-col">
       <div class="grid grid-cols-1 gap-4">
-        <p class="font-medium">What do you want to do today?</p>
+        <p class="font-medium">What task do you have in mind?</p>
         <form on:submit|preventDefault={addTask} class="flex gap-4 flex-col">
           <input
             bind:value={description}
             placeholder="Road trip round the world"
             class="border-gray-200 border-2 rounded-full px-5 py-2 w-full block"
+            on:click={() => {
+              updating = false;
+            }}
           />
           <button
             type="submit"
@@ -140,7 +163,7 @@
           <p class="font-medium">Edit task</p>
           <form
             on:submit|preventDefault={updateTask}
-            class="flex flex-col gap-4 mb-10"
+            class="flex flex-col gap-4"
           >
             <div class="flex flex-row items-center gap-2">
               <!-- <input
@@ -179,7 +202,7 @@
           </form>
         </div>
       {/if}
-    </div>
+    </section>
 
     <!-- <section class="mb-10">
       <h3 class="font-bold text-xl mb-4">Search for a task</h3>
@@ -209,49 +232,63 @@
       {/if}
     </section> -->
 
-    <section>
-      <h3 class="font-medium text-xl mb-4">Tasks</h3>
-      {#if tasks.length > 0}
-        {#each tasks as task}
-          <div class="flex group flex-row items-center gap-3 mb-3">
-            <a
-              href={`#`}
-              on:click={() => {
-                id = task.id;
-                completed = task.completed;
-                toggleComplete();
-              }}
-            >
-              <span class="text-gray-500">╰┈➤</span>
-              <span class="font-bold inline">
-                {`🚀️ `}
-              </span>
-              &nbsp;
-              <span class={task.completed ? `line-through text-gray-600` : ""}
-                >{`${task.description}`}</span
-              >
-            </a>
-            <div class="inline opacity-0 group-hover:opacity-100">
-              <button
+    <section class="border-2 rounded-2xl py-4">
+      <div class="pl-5 border-b-2 mb-4">
+        <h3 class="font-medium text-xl mb-4">Tasks 💪️</h3>
+      </div>
+      <div class="pl-5">
+        {#if tasks.length > 0}
+          {#each tasks as task}
+            <div class="flex group flex-row items-center gap-3 mb-3">
+              <a
+                href={`#`}
                 on:click={() => {
-                  new_description = task.description;
                   id = task.id;
-                  updating = true;
+                  completed = task.completed;
+                  toggleComplete();
                 }}
-                class="border-2 text-gray-500 hover:text-gray-700 px-3 py-1 rounded-full font-medium transition-all"
-                >Edit</button
               >
-              <button
-                on:click={() => deleteTask(task.id)}
-                class="border-2 text-gray-500 hover:text-gray-700 px-3 py-1 rounded-full font-medium transition-all"
-                >Delete</button
-              >
+                <span
+                  class={`group-hover:text-black ${!task.completed ? "text-[#797979]" : "text-gray-400"} transition-all`}
+                  >╰┈➤</span
+                >
+                {#if !task.completed}
+                  <span class="font-bold inline">
+                    {`🐣️ `}
+                  </span>
+                {:else}
+                  <span class="font-bold inline">
+                    {`🚀️ `}
+                  </span>
+                {/if}
+                &nbsp;
+                <span
+                  class={`text-black group-hover:text-gray-800 group-hover:font-medium transition-all ease-in-out group-hover:tracking-tight ${task.completed ? `line-through text-gray-400` : ""}`}
+                  >{`${task.description}`}</span
+                >
+              </a>
+              <div class="inline-flex opacity-0 group-hover:opacity-100 gap-2">
+                <button
+                  on:click={() => {
+                    new_description = task.description;
+                    id = task.id;
+                    updating = true;
+                  }}
+                  class="border-2 text-gray-500 hover:text-white hover:hover:bg-gray-800 hover:border-gray-800 px-3 py-[2px] rounded-full font-medium transition-all"
+                  >Edit</button
+                >
+                <button
+                  on:click={() => deleteTask(task.id)}
+                  class="border-2 text-gray-500 hover:text-white hover:hover:bg-gray-800 hover:border-gray-800 px-3 py-[2px] rounded-full font-medium transition-all"
+                  >Delete</button
+                >
+              </div>
             </div>
-          </div>
-        {/each}
-      {:else}
-        <p>🚀️ Add a new task.</p>
-      {/if}
+          {/each}
+        {:else}
+          <p>😭️ No task to show yet.</p>
+        {/if}
+      </div>
     </section>
   </div>
 </main>
