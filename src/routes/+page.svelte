@@ -12,6 +12,7 @@
   let id: number;
   let completed: boolean = false;
   let new_description: string;
+  let updating: boolean = false;
 
   const fetchTasks = async () => {
     try {
@@ -52,6 +53,7 @@
     }
     id = NaN;
     completed = false;
+    updating = false;
     fetchTasks();
   };
 
@@ -127,15 +129,15 @@
           />
           <button
             type="submit"
-            class="bg-green-800 hover:bg-green-700 w-fit text-white px-5 py-[10px] block rounded-full font-medium transition-all"
+            class="bg-gray-800 hover:bg-gray-700 w-fit text-white px-5 py-[10px] block rounded-full font-medium transition-all"
             >Add task</button
           >
         </form>
       </div>
 
-      {#if tasks.length > 0}
+      {#if tasks.length > 0 && updating}
         <div class="grid grid-cols-1 gap-4">
-          <p class="font-medium">Edit a task</p>
+          <p class="font-medium">Edit task</p>
           <form
             on:submit|preventDefault={updateTask}
             class="flex flex-col gap-4 mb-10"
@@ -159,11 +161,21 @@
             /> -->
             </div>
 
-            <button
-              type="submit"
-              class="bg-green-800 w-fit hover:bg-green-700 text-white px-5 py-[10px] rounded-full font-medium transition-all"
-              >Update task</button
-            >
+            <div class="flex flex-row gap-2">
+              <button
+                type="submit"
+                class="bg-gray-800 w-fit hover:bg-gray-700 text-white px-5 py-[10px] rounded-full font-medium transition-all"
+                >Update</button
+              >
+
+              <button
+                on:click={() => {
+                  updating = false;
+                }}
+                class="w-fit text-gray-700 hover:border-gray-200 border-transparent border-2 px-5 py-[10px] rounded-full font-medium transition-all"
+                >Cancel</button
+              >
+            </div>
           </form>
         </div>
       {/if}
@@ -198,10 +210,10 @@
     </section> -->
 
     <section>
-      <h3 class="font-medium text-xl mb-4">All tasks</h3>
+      <h3 class="font-medium text-xl mb-4">Tasks</h3>
       {#if tasks.length > 0}
         {#each tasks as task}
-          <div class="flex flex-row items-center gap-3 mb-3">
+          <div class="flex group flex-row items-center gap-3 mb-3">
             <a
               href={`#`}
               on:click={() => {
@@ -219,18 +231,19 @@
                 >{`${task.description}`}</span
               >
             </a>
-            <div class="inline">
+            <div class="inline opacity-0 group-hover:opacity-100">
               <button
                 on:click={() => {
                   new_description = task.description;
                   id = task.id;
+                  updating = true;
                 }}
-                class="border-2 text-gray-500 hover:text-gray-700 px-5 py-1 rounded-full font-medium transition-all"
+                class="border-2 text-gray-500 hover:text-gray-700 px-3 py-1 rounded-full font-medium transition-all"
                 >Edit</button
               >
               <button
                 on:click={() => deleteTask(task.id)}
-                class="border-2 text-gray-500 hover:text-gray-700 px-5 py-1 rounded-full font-medium transition-all"
+                class="border-2 text-gray-500 hover:text-gray-700 px-3 py-1 rounded-full font-medium transition-all"
                 >Delete</button
               >
             </div>
