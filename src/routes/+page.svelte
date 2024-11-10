@@ -6,8 +6,6 @@
   import { error } from "@sveltejs/kit";
 
   let tasks: Task[] = [];
-  // let oneTask: Task | null = null;
-  // let taskId: number;
   let description: string = "";
   let id: number;
   let completed: boolean = false;
@@ -64,31 +62,6 @@
     fetchTasks();
   };
 
-  // const getTaskById = async () => {
-  //   console.log("Fetching task by id:", typeof taskId);
-  //   const parsedId = parseInt(String(taskId));
-  //   console.log("ParsedId type:", typeof parsedId);
-  //   if (isNaN(parsedId) || parsedId <= 0) {
-  //     console.error("Invalid task ID");
-  //     return;
-  //   }
-
-  //   try {
-  //     console.log("Trying to invoke");
-  //     oneTask = await invoke<Task | null>("fetch_task_by_id", {
-  //       task_id: parsedId,
-  //     });
-  //     console.log("OneTask's returned value: ", oneTask);
-  //     if (!oneTask) {
-  //       console.log("No task found with ID:", parsedId);
-  //     } else {
-  //       console.log("Fetched task by id:", oneTask?.description);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching task by id:", error);
-  //   }
-  // };
-
   const deleteTask = async (id: number) => {
     try {
       await invoke("remove_task", { task_id: id });
@@ -96,22 +69,20 @@
     } catch (error) {
       console.error("Error deleting task", error);
     }
-    // deleting = false;
+    updating = false;
   };
 
   const toggleDeleting = (task_param: Task) => {
-    // For future reference: This works (long form)
+    tasks = tasks.map((task) =>
+      task_param.id === task.id ? { ...task, deleting: !task.deleting } : task
+    );
+    // Breakdown of the code above:
     // tasks = tasks.map((task) => {
     //   if (task_param.id === task.id) {
     //     task = { ...task, deleting: !task.deleting };
     //   }
     //   return task;
     // });
-
-    // This works (short form)
-    tasks = tasks.map((task) =>
-      task_param.id === task.id ? { ...task, deleting: !task.deleting } : task
-    );
   };
 
   const toggleComplete = async () => {
@@ -137,21 +108,10 @@
 <main class="flex flex-col items-center">
   <div class="pt-20 w-[700px] flex flex-col gap-10">
     <header class="flex flex-row gap-3 justify-between items-end mb-4">
-      <h1 class="font-bold text-5xl">🚀️ Rockit</h1>
+      <h1 class="font-bold text-5xl tracking-tight">Rockit</h1>
+      <!-- <h1 class="font-bold text-5xl tracking-tight flex flex-row gap-2"><img src="/Logo.svg" alt="Logo" class="w-[50px]" />Rockit</h1> -->
       <p class="text-gray-500">Developed by Oserefemhen Ativie</p>
     </header>
-
-    <!-- <section class="border-2 rounded-2xl py-4">
-      <div class="pl-4 border-b-2 mb-4">
-        <h3 class="font-medium text-xl mb-4">Quote</h3>
-      </div>
-      <div class="flex flex-row gap-2 pl-4">
-        <p>
-          “Success is the sum of small efforts, repeated day in and day out.”
-        </p>
-        <p class="text-gray-500">Robert Collier</p>
-      </div>
-    </section> -->
 
     <section class="border-2 rounded-2xl py-4">
       <div class="flex flex-row gap-2 pl-5">
@@ -188,22 +148,11 @@
             class="flex flex-col gap-4"
           >
             <div class="flex flex-row items-center gap-2">
-              <!-- <input
-              bind:value={id}
-              type="number"
-              placeholder="Task id"
-              class="border-gray-200 border-2 rounded-full pl-5 pr-2 py-2 w-32"
-            /> -->
               <input
                 bind:value={new_description}
                 placeholder="New task description"
                 class="border-gray-200 border-2 w-full rounded-full px-5 py-2"
               />
-              <!-- <input
-              bind:checked={completed}
-              type="checkbox"
-              class="w-12 h-[44px] rounded-2xl"
-            /> -->
             </div>
 
             <div class="flex flex-row gap-2">
@@ -225,34 +174,6 @@
         </div>
       {/if}
     </section>
-
-    <!-- <section class="mb-10">
-      <h3 class="font-bold text-xl mb-4">Search for a task</h3>
-      <form
-        on:submit|preventDefault={getTaskById}
-        class="flex flex-row items-center gap-2 mb-5"
-      >
-        <input
-          bind:value={taskId}
-          type="number"
-          placeholder="Task ID"
-          class="border-gray-200 border-2 rounded-full pl-5 pr-2 py-2 w-32"
-        />
-        <button
-          type="submit"
-          class="bg-green-800 hover:bg-green-700 text-white px-5 py-[10px] rounded-full font-bold transition-all"
-          >Find task</button
-        >
-      </form>
-
-      {#if oneTask}
-        <p>
-          {oneTask.description}
-        </p>
-      {:else}
-        <p>No task found.</p>
-      {/if}
-    </section> -->
 
     <section class="border-2 rounded-2xl py-4 mb-16">
       <div class="pl-5 border-b-2 mb-4">
